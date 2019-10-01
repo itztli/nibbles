@@ -3,6 +3,8 @@
 import sys, termios, tty, os, time
 import select
 import numpy as np
+from time import sleep
+
 
 A = 80
 B = 25
@@ -13,8 +15,10 @@ board = np.zeros((A,B))
 board[39,13]=3
 board[40,13]=3
 board[41,13]=3
+board[42,13]=3
+board[43,13]=3
 
-head = [41,13]
+head = [43,13]
 tail = [39,13]
 direction= 3
 growUp = 0
@@ -79,11 +83,73 @@ def ClearScreen():
 
 
 def UpdateHead():
+
+    x = head[0]
+    y = head[1]
+    
+
+    #conditions to check the borders of the board
     if direction == 1:
         head[1] -= 1
+        if head[1] < 0:
+            return True
+            
     if direction == 2:
         head[1] += 1
+        if head[1] > B-1:
+            return True
 
+    if direction == 3:
+        head[0] += 1
+        if head[0] > A-1:
+            return True
+
+    if direction == 4:
+        head[0] -= 1
+        if head[0] < 0:
+            return True
+
+    if board[head[0],head[1]] > 0:
+        return True
+
+    #updating board
+
+    board[head[0],head[1]] = direction
+    board[x,y] = direction
+    
+    return False
+
+def UpdateTail():
+    backup_tail_direction = board[tail[0],tail[1]]
+    board[tail[0],tail[1]] = 0
+
+    if backup_tail_direction == 1:
+        tail[1] -= 1
+
+    if backup_tail_direction == 2:
+        tail[1] += 1
+
+    if backup_tail_direction == 3:
+        tail[0] += 1
+
+    if backup_tail_direction == 4:
+        tail[0] -= 1
+        
+
+
+
+def PrintScreen():
+    for y in range(B):
+        for x in range(A):
+            if board[x,y] > 0:
+                print("$", end='')
+            else:
+                print(" ",end='')
+        print("");
+    print(tail)
+
+def Wait():
+    sleep(0.5)
     
 #button_delay = 0.2    
 c = printBox(40,6,"Nibbles ver 0.0.0.0.1")
@@ -103,18 +169,33 @@ try:
         #READ
         if isData():
             c = sys.stdin.read(1)
-            print(c)
-            #if c == '\x1b':         # x1b is ESC
-            #    break
+            #print(c)
+            if c == '\x1b':         # x1b is ESC
+                break
+            if c == 'w':   
+                direction=1
+            if c == 's':   
+                direction=2
+            if c == 'd':   
+                direction=3
+            if c == 'a':   
+                direction=4
+                
+        LOST = UpdateHead()
 
-        UpdateHead()
+        if LOST:
+            break
+        
         UpdateTail()
-        AddFood()
+        #AddFood()
         PrintScreen()
         Wait()        
 
 finally:
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+
+
+print("Game over!!!")
 
 #while not LOST:
 #    ClearScreen()
