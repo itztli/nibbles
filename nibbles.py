@@ -2,6 +2,24 @@
 
 import sys, termios, tty, os, time
 import select
+import numpy as np
+
+A = 80
+B = 25
+
+LOST = False
+old_settings = termios.tcgetattr(sys.stdin)
+board = np.zeros((A,B))
+board[39,13]=3
+board[40,13]=3
+board[41,13]=3
+
+head = [41,13]
+tail = [39,13]
+direction= 3
+growUp = 0
+
+# 1:UP, 2:DOWN, 3:RIGHT, 4:LEFT
 
 def isData():
     return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
@@ -58,13 +76,19 @@ def printBox(width,height,message):
 
 def ClearScreen():
     os.system('clear')  # on linux / os x
-           
+
+
+def UpdateHead():
+    if direction == 1:
+        head[1] -= 1
+    if direction == 2:
+        head[1] += 1
+
+    
 #button_delay = 0.2    
 c = printBox(40,6,"Nibbles ver 0.0.0.0.1")
 print(c)
 
-LOST = False
-old_settings = termios.tcgetattr(sys.stdin)
 
 try:
     tty.setcbreak(sys.stdin.fileno())
