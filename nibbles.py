@@ -86,7 +86,7 @@ def ClearScreen():
     os.system('clear')  # on linux / os x
 
 
-def UpdateHead(Food):
+def UpdateHead(Food,growUp):
 
     x = head[0]
     y = head[1]
@@ -95,52 +95,56 @@ def UpdateHead(Food):
     if direction == 1:
         head[1] -= 1
         if head[1] < 0:
-            return True, Food
+            return True, Food, growUp
             
     if direction == 2:
         head[1] += 1
         if head[1] > B-1:
-            return True, Food
+            return True, Food, growUp
 
     if direction == 3:
         head[0] += 1
         if head[0] > A-1:
-            return True, Food
+            return True, Food, growUp
 
     if direction == 4:
         head[0] -= 1
         if head[0] < 0:
-            return True, Food
+            return True, Food, growUp
 
     if board[head[0],head[1]] > 0:
-        return True, Food
+        return True, Food, growUp
 
     #check for food
     if board[head[0],head[1]] < 0:
+        growUp = growUp + int(-1*board[head[0],head[1]])
         Food = False
     
     #updating board
     board[head[0],head[1]] = direction
     board[x,y] = direction
     
-    return False, Food
+    return False, Food, growUp
 
-def UpdateTail():
-    backup_tail_direction = board[tail[0],tail[1]]
-    board[tail[0],tail[1]] = 0
+def UpdateTail(growUp):
+    if growUp > 0:
+        growUp = growUp - 1
+    else:
+        backup_tail_direction = board[tail[0],tail[1]]
+        board[tail[0],tail[1]] = 0
 
-    if backup_tail_direction == 1:
-        tail[1] -= 1
+        if backup_tail_direction == 1:
+            tail[1] -= 1
 
-    if backup_tail_direction == 2:
-        tail[1] += 1
+        if backup_tail_direction == 2:
+            tail[1] += 1
 
-    if backup_tail_direction == 3:
-        tail[0] += 1
+        if backup_tail_direction == 3:
+            tail[0] += 1
 
-    if backup_tail_direction == 4:
-        tail[0] -= 1
-        
+        if backup_tail_direction == 4:
+            tail[0] -= 1
+    return growUp
 
 
 
@@ -197,12 +201,12 @@ try:
             if c == 'a':   
                 direction=4
                 
-        LOST, Food = UpdateHead(Food)
+        LOST, Food, growUp = UpdateHead(Food, growUp)
 
         if LOST:
             break
         
-        UpdateTail()
+        growUp = UpdateTail(growUp)
         countFood, Food = AddFood(countFood, Food)
         ClearScreen()
         PrintScreen()
