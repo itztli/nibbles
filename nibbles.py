@@ -23,6 +23,8 @@ tail = [39,13]
 direction= 3
 growUp = 0
 
+Food = False
+
 # 1:UP, 2:DOWN, 3:RIGHT, 4:LEFT
 
 def isData():
@@ -150,6 +152,10 @@ def PrintScreen():
 
 def Wait():
     sleep(0.5)
+
+def AddFood():
+    
+
     
 #button_delay = 0.2    
 c = printBox(40,6,"Nibbles ver 0.0.0.0.1")
@@ -187,7 +193,7 @@ try:
             break
         
         UpdateTail()
-        #AddFood()
+        AddFood()
         PrintScreen()
         Wait()        
 
