@@ -5,6 +5,7 @@ import select
 import numpy as np
 from time import sleep
 
+from random import random
 
 A = 80
 B = 25
@@ -24,6 +25,7 @@ direction= 3
 growUp = 0
 
 Food = False
+countFood = -1
 
 # 1:UP, 2:DOWN, 3:RIGHT, 4:LEFT
 
@@ -84,42 +86,44 @@ def ClearScreen():
     os.system('clear')  # on linux / os x
 
 
-def UpdateHead():
+def UpdateHead(Food):
 
     x = head[0]
     y = head[1]
     
-
     #conditions to check the borders of the board
     if direction == 1:
         head[1] -= 1
         if head[1] < 0:
-            return True
+            return True, Food
             
     if direction == 2:
         head[1] += 1
         if head[1] > B-1:
-            return True
+            return True, Food
 
     if direction == 3:
         head[0] += 1
         if head[0] > A-1:
-            return True
+            return True, Food
 
     if direction == 4:
         head[0] -= 1
         if head[0] < 0:
-            return True
+            return True, Food
 
     if board[head[0],head[1]] > 0:
-        return True
+        return True, Food
 
+    #check for food
+    if board[head[0],head[1]] < 0:
+        Food = False
+    
     #updating board
-
     board[head[0],head[1]] = direction
     board[x,y] = direction
     
-    return False
+    return False, Food
 
 def UpdateTail():
     backup_tail_direction = board[tail[0],tail[1]]
@@ -145,16 +149,25 @@ def PrintScreen():
         for x in range(A):
             if board[x,y] > 0:
                 print("$", end='')
+            elif board[x,y] < 0:
+                print(str(int(-1*board[x,y])),end="")
             else:
                 print(" ",end='')
         print("");
-    print(tail)
+    print(tail, str(Food))
 
 def Wait():
     sleep(0.5)
 
-def AddFood():
-    
+def AddFood(countFood, Food):
+    if not Food:
+        x_food = int(random()*A)
+        y_food = int(random()*B)
+        board[x_food,y_food] = countFood
+        countFood = countFood - 1
+        Food = True
+    return countFood, Food
+
 
     
 #button_delay = 0.2    
@@ -169,9 +182,6 @@ try:
     while not LOST:
         #print(i)
         #i += 1
-
-        ClearScreen()
-
         #READ
         if isData():
             c = sys.stdin.read(1)
@@ -187,13 +197,14 @@ try:
             if c == 'a':   
                 direction=4
                 
-        LOST = UpdateHead()
+        LOST, Food = UpdateHead(Food)
 
         if LOST:
             break
         
         UpdateTail()
-        AddFood()
+        countFood, Food = AddFood(countFood, Food)
+        ClearScreen()
         PrintScreen()
         Wait()        
 
